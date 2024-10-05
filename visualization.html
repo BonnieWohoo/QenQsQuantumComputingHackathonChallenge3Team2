@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smooth D3.js Line Chart Transition</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smooth Transition: y = 2x</h1>
+    <svg width="600" height="400"></svg>
+
+    <script>
+        // Initialize SVG and dimensions
+        const svg = d3.select("svg");
+        const width = +svg.attr("width");
+        const height = +svg.attr("height");
+        const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+
+        // Create scales
+        const x = d3.scaleLinear()
+            .domain([0, 30]) // x from 0 to 30
+            .range([margin.left, width - margin.right]);
+
+        const y = d3.scaleLinear()
+            .domain([0, 60]) // y = 2 * x, max y when x = 30
+            .range([height - margin.bottom, margin.top]);
+
+        // Create a line generator
+        const line = d3.line()
+            .x(d => x(d.x))
+            .y(d => y(d.y))
+            .curve(d3.curveLinear); // Use linear curve for smoothness
+
+        // Create an initial empty data array
+        let data = [];
+
+        // Function to update the line chart
+        function updateLineChart() {
+            // Generate new data points
+            const newData = Array.from({length: 31}, (_, i) => ({ x: i, y: 2 * i }));
+
+            // Select and bind data to the path
+            const path = svg.append("path")
+                .datum(newData)
+                .attr("class", "line")
+                .attr("d", line);
+
+            // Animate the transition
+            path.attr("stroke-dasharray", function() {
+                const totalLength = this.getTotalLength();
+                return `${totalLength} ${totalLength}`;
+            })
+            .attr("stroke-dashoffset", function() {
+                return this.getTotalLength();
+            })
+            .transition()
+            .duration(3000) // Duration of 3 seconds
+            .attr("stroke-dashoffset", 0); // Move dashoffset to 0 for smooth drawing
+
+            // Add circles at each data point
+            svg.selectAll("circle")
+                .data(newData)
+                .enter().append("circle")
+                .attr("cx", d => x(d.x))
+                .attr("cy", d => y(d.y))
+                .attr("r", 3);
+        }
+
+        // Call the function to create the chart
+        updateLineChart();
+    </script>
+</body>
+</html>

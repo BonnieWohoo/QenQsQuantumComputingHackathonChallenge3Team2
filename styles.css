@@ -3,3 +3,33 @@
 @tailwind utilities;
 
 /* You can add custom styles here */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+.circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: red;
+    position: relative;
+    animation: moveUpDown 1s infinite alternate;
+}
+
+.circle:nth-child(2) {
+    animation-delay: 0.5s; /* Delays the second circle for a staggered effect */
+}
+
+@keyframes moveUpDown {
+    0% {
+        transform: translateY(0); /* Start position */
+    }
+    100% {
+        transform: translateY(-100px); /* Move up by 100 pixels */
+    }
+}
