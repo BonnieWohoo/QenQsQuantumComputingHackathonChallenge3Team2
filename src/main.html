@@ -4,14 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tailwind Example</title>
-  <link href="output.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.12/dist/full.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100">
+  <button class="btn btn-primary">Click Me</button>
+
+
+  <div>
+    <h1>B = </h1>
+  <input placeholder="Type here" class="input input-bordered w-full max-w-xs" />
+
+
+
     <div>
         <input type="range" min="0" max="100" value="25" class="range" step="25" />
     <div class="flex w-full justify-between px-2 text-xs">
-      <span>|</span>
-      <span>|</span>
+      <span>1</span>
+      <span>2</span>
       <span>|</span>
       <span>|</span>
       <span>|</span>
@@ -23,6 +33,7 @@
 
 </div>
 
+</div>
 </div>
 </body>
 </html>

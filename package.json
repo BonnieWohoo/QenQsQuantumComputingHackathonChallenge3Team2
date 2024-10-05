@@ -4,17 +4,12 @@
   "main": ".js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tailwindcss -i ./styles.css -o ./output.css"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "d3": "^7.9.0",
-    "daisyui": "^4.12.12"
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.4.13"
+    "d3": "^7.9.0"
   }
 }
