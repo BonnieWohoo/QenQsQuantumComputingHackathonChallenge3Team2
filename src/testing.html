@@ -34,7 +34,6 @@
         const input = document.getElementById('circleValue');
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-        let data = [];
 
         // D3 Line Chart setup
         const svg = d3.select("#d3Chart")
@@ -93,7 +92,7 @@
         const circles = []; // Store all drawn circles (their x, y, radius)
         let attempts = 0;
 
-        // Try to draw 10 circles without overlaps
+        // Try to draw 100 circles without overlaps
         for (let i = 0; i < 100; i++) {
             let x, y;
             let safe = false;
@@ -135,8 +134,11 @@
 
             // Add label for each circle
             ctx.fillStyle = 'black';
-            ctx.font = '1px Arial';
-            ctx.fillText(`R: ${radius}`, x - 15, y + 5);
+            ctx.font = '16px Arial'; // Regular font size
+            ctx.fillText('O', x - 15, y + 5); // Draw the "O"
+            ctx.font = '12px Arial'; // Smaller font size for subscript
+            ctx.fillText('2', x - 5, y + 10); // Draw the subscript '2' slightly lower and smaller
+
         }
     }
 
@@ -166,6 +168,8 @@
         console.log(e.target.value);
     }
     });
+
+
 
     </script>
     
