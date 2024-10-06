@@ -37,6 +37,7 @@
         const ctx = canvas.getContext('2d');
         const SPACE = '#1A1B41';
         const PINK = '#DD99BB';
+        const TIFFANY = '9DDFCF';
 
         // High DPI Canvas Adjustment
         function adjustCanvasForHighDPI(canvas, context) {
@@ -76,16 +77,17 @@
         // Optionally, add axis labels
         svg.append("text")
             .attr("class", "x axis-label")
-            .attr("transform", `translate(${width / 2 + margin.left}, ${height + margin.bottom + 10})`) // Moved to below axis
+            .attr("transform", `translate(${width / 2 + margin.left}, ${height + margin.bottom + 20})`) // Moved to below axis
             .style("text-anchor", "middle")
             .text("B");
 
         svg.append("text")
             .attr("class", "y axis-label")
             .attr("transform", "rotate(-90)")
-            .attr("y", margin.left / 2)
+            .attr("y", margin.left / 2 - 10)
             .attr("x", -height / 2 - margin.top)
             .style("text-anchor", "middle")
+            .style("font-size","12px")
             .text("Triplet Yield");
     
 
@@ -195,6 +197,37 @@
             updateD3Graph(e.target.value);
         }
     });
+
+    const svg2 = d3.select("#barChart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%");
+
+        const width2 = svg2.node().getBoundingClientRect().width;
+        const height2 = svg2.node().getBoundingClientRect().height;
+
+        // Sample data for circle radii
+        const radii = [30, 20, 40, 25, 15]; // Example radii for stacked circles
+    // Function to draw stacked circles
+    
+    function drawStackedCircles() {
+            let currentY = height2; // Start at the bottom of the SVG
+            
+            // Draw each circle
+            radii.forEach(radius => {
+                currentY -= radius; // Move the starting point down by the circle's radius
+
+                // Append a circle
+                svg2.append("circle")
+                    .attr("cx", width2 / 2) // Centered in the SVG
+                    .attr("cy", currentY) // Y position based on currentY
+                    .attr("r", radius) // Radius of the circle
+                    .style("fill", d3.schemeCategory10[Math.floor(Math.random() * 10)]); // Random color
+            });
+        }
+
+        // Call the function to draw circles
+        drawStackedCircles();
 
     </script>
     

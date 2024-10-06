@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Circles with D3</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.12/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .circle {
+            cursor: pointer;
+        }
+
+        .label {
+            font-size: 16px;
+            fill: black;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+<svg id="fruitSVG" width="800" height="400"></svg>
+
+<script>
+    const svg = d3.select("#fruitSVG");
+    const ORANGE_COLOR = '#FFA500'; // Orange
+    const APPLE_COLOR = '#FF0000'; // Red
+    const RADIUS = 20; // Radius of circles
+    const SPACING = 5; // Space between circles
+    const LABEL_OFFSET = 30; // Offset to avoid overlap with labels
+    const MOVE_DISTANCE = 5; // Amount to move circles up and down
+    const MOVE_DURATION = 1000; // Duration for the up and down movement in milliseconds
+
+    // Fruit counts
+    const fruits = [
+        { type: "Oranges", count: 15, color: ORANGE_COLOR },
+        { type: "Apples", count: 10, color: APPLE_COLOR }
+    ];
+
+    // Initial y offset
+    let yOffset = 0;
+
+    // Function to draw fruits
+    function drawFruits() {
+        svg.selectAll("*").remove(); // Clear SVG
+
+        let x = 50; // Starting x position
+        let y = 50; // Starting y position
+
+        // Draw fruits
+        fruits.forEach(fruit => {
+            // Draw label for fruit
+            svg.append("text")
+                .attr("class", "label")
+                .attr("x", 20)
+                .attr("y", y + 5)
+                .text(fruit.type);
+
+            // Draw circles for each fruit
+            for (let i = 0; i < fruit.count; i++) {
+                svg.append("circle")
+                    .attr("class", "circle")
+                    .attr("cx", x)
+                    .attr("cy", y + yOffset)
+                    .attr("r", RADIUS)
+                    .attr("fill", fruit.color);
+
+                // Update x position
+                x += RADIUS * 2 + SPACING;
+
+                // Check if we need to move to the next line
+                if (i === 9) { // 10 circles per line
+                    x = 50; // Reset x to start of the line
+                    y += RADIUS * 2 + SPACING; // Move down for the next line
+                }
+            }
+
+            // Reset x for next fruit
+            x = 50; 
+            y += RADIUS * 2 + SPACING + LABEL_OFFSET; // Move down for the next fruit label
+        });
+    }
+
+    // Animation logic for moving circles up and down
+    function animateCircles() {
+        d3.transition()
+            .duration(MOVE_DURATION)
+            .ease(d3.easeSin)
+            .tween("move", function() {
+                return function(t) {
+                    yOffset = Math.sin(t * Math.PI) * MOVE_DISTANCE; // Calculate the vertical offset
+                    drawFruits(); // Redraw circles with new offset
+                };
+            })
+            .on("end", animateCircles); // Repeat animation
+    }
+
+    // Initial drawing
+    drawFruits();
+    animateCircles();
+</script>
+
+</body>
+</html>

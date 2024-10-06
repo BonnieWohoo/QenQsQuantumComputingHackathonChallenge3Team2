@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Closest Y Value</title>
+</head>
+<body>
+    <h1>Find Closest Y Value</h1>
+    <input type="number" id="zValue" placeholder="Enter z value" />
+    <button onclick="findClosestY()">Find Closest Y</button>
+    <p id="result"></p>
+
+    <script>
+        // Sample coordinates
+        const coordinates = [
+            { x: 1, y: 2 },
+            { x: 3, y: 4 },
+            { x: 5, y: 6 }
+        ];
+
+        function findClosestY() {
+            const z = parseFloat(document.getElementById('zValue').value);
+            let closestY = null;
+            let minDiff = Infinity;
+
+            for (const point of coordinates) {
+                const diff = Math.abs(point.x - z);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestY = point.y;
+                }
+            }
+
+            document.getElementById('result').innerText = closestY !== null 
+                ? `Closest Y value: ${closestY}` 
+                : 'No coordinates available.';
+        }
+    </script>
+</body>
+</html>
