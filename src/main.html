@@ -21,6 +21,8 @@
         <div class="mb-4 w-full">
             <label for="circleValue" class="block text-lg font-semibold">Enter a floating value:</label>
             <input type="number" id="circleValue" step="0.01" class="input input-bordered w-full mt-2" placeholder="0.00">
+
+            <input type="range" id="dataPointSlider" min="0" max="100000" value="0" step="1" class="range range-primary w-full mt-2">
         </div>
 
         <!-- D3 Visualization -->
@@ -93,8 +95,12 @@
         // const x = d3.scaleLinear().domain([0, 10]).range([0, width]);
         // const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
 
-        const xValues = Object.keys(jsonData).map(key => parseFloat(key));
+        const xValues = Object.keys(jsonData).map(key => key);
         const yValues = Object.values(jsonData);
+
+        console.log(xValues);
+        console.log(yValues);
+
 
         const xMin = d3.min(xValues); // Minimum x value
         const xMax = d3.max(xValues); // Maximum x value
@@ -133,22 +139,45 @@
 
         // Optionally, you can also plot the data points using the scales
         const dataPoints = xValues.map((xValue, i) => ({
-            x: xValue,
-            y: jsonData[xValue]
+            x: parseFloat(xValue),
+            y: jsonData[String(xValue)]
         }));
 
+        console.log("Data Points: ", dataPoints);
+
         // Draw data points
-        svg.selectAll("circle")
-            .data(dataPoints)
-            .enter()
-            .append("circle")
-            .attr("cx", d => x(d.x) + margin.left)
-            .attr("cy", d => y(d.y) + margin.top)
-            .attr("r", 5)
-            .style("fill", "blue");
+        // svg.selectAll("circle")
+        //     .data(dataPoints)
+        //     .enter()
+        //     .append("circle")
+        //     .attr("cx", d => x(d.x) + margin.left)
+        //     .attr("cy", d => {
+        //         const yValue = y(d.y);
+        //         //console.log("Pair" + d + x(d.x) + ","+ y(d.y));
+        //         if (isNaN(yValue)) {
+        //             console.log(`cy is NaN for x value: ${d.x}, cx: ${x(d.x) + margin.left}`);
+        //             return NaN; // Keep it NaN as requested
+        //         }
+        //         return yValue + margin.top;
+        //     })
+        //     .attr("r", 5)
+        //     .style("fill", "blue");
 
 
 
+// Create the line generator
+const lineGenerator = d3.line()
+    .x(d => x(d.x) + margin.left)  // x position
+    .y(d => y(d.y) + margin.top)    // y position
+
+// Draw the line
+svg.append("path")
+    .datum(dataPoints)  // Bind the data
+    .attr("class", "line")   // Add a class for styling (if needed)
+    .attr("d", lineGenerator) // Set the path data
+    .style("fill", "none")   // No fill for the line
+    .style("stroke", "black")  // Line color
+    .style("stroke-width", 2); // Line thickness
 
 
 
@@ -276,6 +305,43 @@
                 updateD3Graph(e.target.value);
             }
         });
+
+// Function to find and log the closest value
+function logClosestValue(sliderValue) {
+    // Convert sliderValue to a number with appropriate decimal places
+    const formattedValue = (sliderValue / 100000).toFixed(9); // Adjust divisor based on slider scale
+    
+    // Check if the formattedValue exists in jsonData
+    if (jsonData.hasOwnProperty(formattedValue)) {
+        console.log(`Value for ${formattedValue}: ${jsonData[formattedValue]}`);
+    } else {
+        // If not found, you can implement a way to find the closest value
+        let closestKey = null;
+        let closestDiff = Infinity;
+
+        // Find the closest key in jsonData
+        for (const key in jsonData) {
+            const diff = Math.abs(parseFloat(key) - parseFloat(formattedValue));
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestKey = key;
+            }
+        }
+
+        if (closestKey) {
+            console.log(`Closest value for ${formattedValue} is ${closestKey}: ${jsonData[closestKey]}`);
+        }
+    }
+}
+
+// Slider event listener
+const slider = document.getElementById('dataPointSlider');
+slider.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value);
+    logClosestValue(value);
+});
+
+
 
     </script>
     
