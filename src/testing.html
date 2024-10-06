@@ -24,7 +24,7 @@
         </div>
 
         <!-- D3 Visualization -->
-        <div id="d3Chart" class="w-full h-32 bg-white rounded-md shadow-md"></div>
+        <div id="d3Chart" class="bg-white rounded-md shadow-md" style="height: 500px; width: 500px; padding:10px;"></div>
     </div>
 
     <!-- Right Side: Drawing Space -->
@@ -34,72 +34,139 @@
         const input = document.getElementById('circleValue');
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
-    
+        let data = [];
+
         // D3 Line Chart setup
         const svg = d3.select("#d3Chart")
             .append("svg")
             .attr("width", "100%")
             .attr("height", "100%");
     
-        const margin = {top: 20, right: 30, bottom: 30, left: 40};
+        const margin = {top: 20, right: 20, bottom: 30, left: 40};
         const width = svg.node().getBoundingClientRect().width - margin.left - margin.right;
         const height = svg.node().getBoundingClientRect().height - margin.top - margin.bottom;
     
         const x = d3.scaleLinear().domain([0, 10]).range([0, width]);
         const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
     
-        const xAxis = d3.axisBottom(x).ticks(5).tickFormat(d => d);
-        const yAxis = d3.axisLeft(y).ticks(5);
-    
+        // Append the x-axis
         svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top + height})`)
-            .call(xAxis)
-            .append("text")
-            .attr("fill", "black")
-            .attr("x", width / 2)
-            .attr("y", 20)
-            .attr("text-anchor", "middle")
+            .attr("transform", `translate(${margin.left}, ${height + margin.top})`) // Adjust for margins
+            .call(d3.axisBottom(x));
+
+        // Append the y-axis
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`) // Adjust for margins
+            .call(d3.axisLeft(y));
+
+        // Optionally, add axis labels
+        svg.append("text")
+            .attr("class", "x axis-label")
+            .attr("transform", `translate(${width / 2 + margin.left}, ${margin.bottom - 5})`) // Center the label
+            .style("text-anchor", "middle")
             .text("B");
-    
-        svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`)
-            .call(yAxis)
-            .append("text")
-            .attr("fill", "black")
+
+        svg.append("text")
+            .attr("class", "y axis-label")
             .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .attr("text-anchor", "end")
+            .attr("y", margin.left/10)
+            .attr("x", -height / 2 - margin.top)
+            .style("text-anchor", "middle")
             .text("Triplet Yield");
     
-        // Function to draw circles
-        function drawCircle(value) {
-            // Clear previous circles
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-            // Draw a circle with the given value
-            const radius = parseFloat(value);
-            if (!isNaN(radius) && radius > 0) {
-                // Randomly decide color
-                const color = Math.random() > 0.5 ? 'blue' : 'red';
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Add a dynamic label (for now, just the radius)
-                ctx.fillStyle = 'black';
-                ctx.font = '16px Arial';
-                ctx.fillText(`Radius: ${radius}`, canvas.width / 2 - 30, canvas.height / 2);
+
+    // Function to check if two circles overlap
+    function circlesOverlap(x1, y1, r1, x2, y2, r2) {
+        const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        return dist < r1 + r2; // They overlap if the distance is less than the sum of the radii
+    }
+
+    // Function to draw 10 circles without overlapping
+    function drawCircles(value) {
+        // Clear the canvas before drawing new circles
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Parse the input value to a float and ensure it's valid
+        const radius = parseFloat(value);
+        if (isNaN(radius) || radius <= 0) return;
+
+        const circles = []; // Store all drawn circles (their x, y, radius)
+        let attempts = 0;
+
+        // Try to draw 10 circles without overlaps
+        for (let i = 0; i < 100; i++) {
+            let x, y;
+            let safe = false;
+
+            // Keep trying to find a valid position for the circle
+            while (!safe && attempts < 1000) {
+                x = Math.random() * (canvas.width - 2 * radius) + radius;
+                y = Math.random() * (canvas.height - 2 * radius) + radius;
+
+                // Check if the new circle overlaps any existing circles
+                safe = true;
+                for (let circle of circles) {
+                    if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
+                        safe = false;
+                        break;
+                    }
+                }
+
+                attempts++;
             }
+
+            // If after too many attempts, break out to avoid infinite loops
+            if (!safe) {
+                console.error("Couldn't place all circles without overlap");
+                break;
+            }
+
+            // Store the circle position and radius
+            circles.push({ x, y, radius });
+
+            // Random color for each circle
+            const color = Math.random() > 0.5 ? 'blue' : 'red';
+            ctx.fillStyle = color;
+
+            // Draw the circle
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add label for each circle
+            ctx.fillStyle = 'black';
+            ctx.font = '1px Arial';
+            ctx.fillText(`R: ${radius}`, x - 15, y + 5);
         }
-    
-        // Event listener for input changes
-        input.addEventListener('input', (e) => {
-            drawCircle(e.target.value);
-            // Here you can also update the D3 line chart with the new value
-            // For example, you can update a dataset and redraw the line chart based on the input value
-        });
+    }
+
+  // Function to update the point based on the input value
+  function updateD3Graph(value) {
+    const scaledX = x(value); // Scale the input value to the x-axis
+    const scaledY = y(.5); // Generate a random value for y-axis (this can be tied to another variable)
+
+    // Remove any previous point
+    svg.selectAll(".data-point").remove();
+
+    // Append the new point
+    svg.append("circle")
+      .attr("class", "data-point")
+      .attr("cx", scaledX + margin.left)
+      .attr("cy", scaledY + margin.top)
+      .attr("r", 5)
+      .style("fill", "blue");
+  }
+
+
+    // Event listener for input changes
+    input.addEventListener('input', (e) => {
+        drawCircles(e.target.value);
+        if(!isNaN(e.target.value)){
+        updateD3Graph(e.target.value);
+        console.log(e.target.value);
+    }
+    });
+
     </script>
     
 </body>
