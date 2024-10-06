@@ -1,349 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circle Drawer with D3</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.12/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        canvas {
-            border: 1px solid #ccc;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circle Drawer with D3</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.12/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
+
 <body class="bg-gray-100 flex flex-col lg:flex-row items-start justify-center min-h-screen p-3">
 
-    <!-- Left Side: Input and D3 Visualization -->
-    <div class="w-full lg:w-1/3 flex flex-col items-start pr-3 space-y-3">
-        <!-- Input Form -->
-        <div class="mb-4 w-full">
-            <label for="circleValue" class="block text-lg font-semibold">Enter a floating value:</label>
-            <input type="number" id="circleValue" step="0.01" class="input input-bordered w-full mt-2" placeholder="0.00">
+  <!-- Left Side: Input and D3 Visualization -->
+  <div class="w-full lg:w-1/3 flex flex-col items-start pr-3 space-y-3">
+    <!-- Input Form -->
+    <div class="mb-4 w-full">
+      <label for="circleValue" class="block text-lg font-semibold">Enter a floating value:</label>
+      <input type="number" id="circleValue" step="0.01" class="input input-bordered w-full mt-2" placeholder="0.00">
 
-            <input type="range" id="dataPointSlider" min="0" max="100000" value="0" step="1" class="range range-primary w-full mt-2">
-        </div>
-
-        <!-- D3 Visualization -->
-        <div id="d3Chart" class="bg-white rounded-md shadow-md" style="height: 300px; width: 500px; padding:10px;"></div>
-        <div id="barChart" class="bg-white rounded-md shadow-md" style="height: 200px; width: 500px; padding:10px;"></div>
+      <input type="range" id="dataPointSlider" min="0" max="0.0001" value="0" step="0.00001"
+        class="range range-primary w-full mt-2">
     </div>
 
-    <!-- Right Side: Drawing Space -->
-    <canvas id="drawingCanvas" width="500" height="310" class="bg-white w-full lg:w-2/3"></canvas>
-    <script src="data.js"></script> <!-- Link to your data file -->
-    <script>
-        const input = document.getElementById('circleValue');
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        const SPACE = '#1A1B41';
-        const PINK = '#DD99BB';
-        const TIFFANY = '#9DDFCF';
+    <!-- D3 Visualization -->
+    <div id="d3Chart" class="bg-white rounded-md shadow-md" style="height: 300px; width: 500px; padding:10px;"></div>
+    <div id="barChart" class="bg-white rounded-md shadow-md" style="height: 200px; width: 500px; padding:10px;"></div>
+  </div>
 
-        // High DPI Canvas Adjustment
-        function adjustCanvasForHighDPI(canvas, context) {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            context.scale(dpr, dpr);
-            canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `${rect.height}px`;
-        }
-        adjustCanvasForHighDPI(canvas, ctx);
+  <!-- Right Side: Drawing Space -->
+  <canvas id="drawingCanvas" width="500" height="310" class="bg-white w-full lg:w-2/3"></canvas>
+  <script src="data.js"></script> <!-- Link to your data file -->
+  <script>
+    const input = document.getElementById('circleValue');
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    const SPACE = '#1A1B41';
+    const PINK = '#DD99BB';
+    const TIFFANY = '#9DDFCF';
 
-        // D3 Line Chart setup
-        const svg = d3.select("#d3Chart")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%");
-
-        const margin = {top: 20, right: 20, bottom: 30, left: 40};
-        const width = svg.node().getBoundingClientRect().width - margin.left - margin.right;
-        const height = svg.node().getBoundingClientRect().height - margin.top - margin.bottom;
-
-        // const x = d3.scaleLinear().domain([0, 10]).range([0, width]);
-        // const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
-
-        // // Append the x-axis
-        // svg.append("g")
-        //     .attr("transform", `translate(${margin.left}, ${height + margin.top})`) // Adjust for margins
-        //     .call(d3.axisBottom(x));
-
-        // // Append the y-axis
-        // svg.append("g")
-        //     .attr("transform", `translate(${margin.left}, ${margin.top})`) // Adjust for margins
-        //     .call(d3.axisLeft(y));
-
-        // // Optionally, add axis labels
-        // svg.append("text")
-        //     .attr("class", "x axis-label")
-        //     .attr("transform", `translate(${width / 2 + margin.left}, ${height + margin.bottom + 20})`) // Moved to below axis
-        //     .style("text-anchor", "middle")
-        //     .text("B");
-
-        // svg.append("text")
-        //     .attr("class", "y axis-label")
-        //     .attr("transform", "rotate(-90)")
-        //     .attr("y", margin.left / 2 - 10)
-        //     .attr("x", -height / 2 - margin.top)
-        //     .style("text-anchor", "middle")
-        //     .style("font-size","12px")
-        //     .text("Triplet Yield");
-
-        // const x = d3.scaleLinear().domain([0, 10]).range([0, width]);
-        // const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
-
-        const xValues = Object.keys(jsonData).map(key => key);
-        const yValues = Object.values(jsonData);
-
-        console.log(xValues);
-        console.log(yValues);
-
-
-        const xMin = d3.min(xValues); // Minimum x value
-        const xMax = d3.max(xValues); // Maximum x value
-        const yMin = d3.min(yValues);  // Minimum y value
-        const yMax = d3.max(yValues);  // Maximum y value
-
-        // Update scales with dynamic min/max values
-        const x = d3.scaleLinear().domain([xMin, xMax]).range([0, width]);
-        const y = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
-
-        // Append the x-axis
-        svg.append("g")
-            .attr("transform", `translate(${margin.left}, ${height + margin.top})`)
-            .call(d3.axisBottom(x));
-
-        // Append the y-axis
-        svg.append("g")
-            .attr("transform", `translate(${margin.left}, ${margin.top})`)
-            .call(d3.axisLeft(y));
-
-        // Optionally, add axis labels
-        svg.append("text")
-            .attr("class", "x axis-label")
-            .attr("transform", `translate(${width / 2 + margin.left}, ${height + margin.bottom + 20})`)
-            .style("text-anchor", "middle")
-            .text("B");
-
-        svg.append("text")
-            .attr("class", "y axis-label")
-            .attr("transform", "rotate(-90)")
-            .attr("y", margin.left / 2 - 10)
-            .attr("x", -height / 2 - margin.top)
-            .style("text-anchor", "middle")
-            .style("font-size", "12px")
-            .text("Triplet Yield");
-
-        // Optionally, you can also plot the data points using the scales
-        const dataPoints = xValues.map((xValue, i) => ({
-            x: parseFloat(xValue),
-            y: jsonData[String(xValue)]
-        }));
-
-        console.log("Data Points: ", dataPoints);
-
-        // Draw data points
-        // svg.selectAll("circle")
-        //     .data(dataPoints)
-        //     .enter()
-        //     .append("circle")
-        //     .attr("cx", d => x(d.x) + margin.left)
-        //     .attr("cy", d => {
-        //         const yValue = y(d.y);
-        //         //console.log("Pair" + d + x(d.x) + ","+ y(d.y));
-        //         if (isNaN(yValue)) {
-        //             console.log(`cy is NaN for x value: ${d.x}, cx: ${x(d.x) + margin.left}`);
-        //             return NaN; // Keep it NaN as requested
-        //         }
-        //         return yValue + margin.top;
-        //     })
-        //     .attr("r", 5)
-        //     .style("fill", "blue");
-
-
-
-// Create the line generator
-const lineGenerator = d3.line()
-    .x(d => x(d.x) + margin.left)  // x position
-    .y(d => y(d.y) + margin.top)    // y position
-
-// Draw the line
-svg.append("path")
-    .datum(dataPoints)  // Bind the data
-    .attr("class", "line")   // Add a class for styling (if needed)
-    .attr("d", lineGenerator) // Set the path data
-    .style("fill", "none")   // No fill for the line
-    .style("stroke", "black")  // Line color
-    .style("stroke-width", 2); // Line thickness
-
-
-
-
-
-
-        // Global array to store circles
-        let circles = [];
-
-        function circlesOverlap(x1, y1, r1, x2, y2, r2) {
-            const dist = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
-            return dist < (r1 + r2);
-        }
-
-        // Function to draw circles without overlapping
-        function drawCircles() {
-            const radius = 20;
-            circles = []; // Reset the circles array for a new set
-            let attempts = 0;
-
-            for (let i = 0; i < 100; i++) {
-                let x, y;
-                let safe = false;
-
-                // Try to find a valid position for the circle
-                while (!safe && attempts < 1000) {
-                    x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
-                    y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
-
-                    // Check if the new circle overlaps any existing circles
-                    safe = true;
-                    for (let circle of circles) {
-                        if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
-                            safe = false;
-                            break;
-                        }
-                    }
-
-                    attempts++;
-                }
-
-                // If too many attempts fail, exit
-                if (!safe) {
-                    console.error("Couldn't place all circles without overlap");
-                    break;
-                }
-
-                // Random color for each circle
-                const color = Math.random() > 0.5 ? SPACE : PINK;
-                const text = 'O₂'; // Assign initial text for each circle
-
-                // Store the circle data (x, y, radius, color, and text)
-                circles.push({ x, y, radius, color, text });
-            }
-
-            // Draw the circles
-            circles.forEach(circle => {
-                drawCircle(circle.x, circle.y, circle.radius, circle.color, circle.text);
-            });
-        }
-
-        // Function to draw a single circle with a given color and text
-        function drawCircle(x, y, radius, color, text) {
-            // Draw the circle
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Draw the text label
-            ctx.fillStyle = 'black';
-            ctx.font = '16px Arial';
-
-            // Measure the text and adjust position
-            const oWidth = ctx.measureText('O').width;
-            const subscriptWidth = ctx.measureText('2').width;
-            const totalTextWidth = oWidth + subscriptWidth;
-            const textX = x - totalTextWidth / 2;
-            const textY = y + 5;
-
-            ctx.fillText('O', textX, textY);
-            ctx.font = '12px Arial'; // Smaller font size for subscript
-            ctx.fillText('2', textX + oWidth, textY + 5); // Subscript placement
-        }
-
-        // Function to update colors and text for the circles without changing positions
-        function updateCircles(newColors, newTexts) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-
-            // Loop through the circles array and update each circle
-            circles.forEach((circle, index) => {
-                // Update color and text if new values are provided
-                if (newColors && newColors[index]) circle.color = newColors[index];
-                if (newTexts && newTexts[index]) circle.text = newTexts[index];
-
-                // Re-draw the circle with updated properties
-                drawCircle(circle.x, circle.y, circle.radius, circle.color, circle.text);
-            });
-        }
-
-        // Function to update the point on D3 graph
-        function updateD3Graph(value) {
-            const scaledX = x(value); // Scale the input value to the x-axis
-            const scaledY = y(.5); // Static value for Y-axis for demo (this can be dynamic)
-
-            // Remove any previous point
-            svg.selectAll(".data-point").remove();
-
-            // Append the new point
-            svg.append("circle")
-                .attr("class", "data-point")
-                .attr("cx", scaledX + margin.left)
-                .attr("cy", scaledY + margin.top)
-                .attr("r", 5)
-                .style("fill", "blue");
-        }
-
-        // Event listener for input changes
-        input.addEventListener('input', (e) => {
-            // Only draw circles once at the start
-            if (circles.length === 0) {
-                drawCircles();
-            }
-            if (!isNaN(e.target.value)) {
-                updateD3Graph(e.target.value);
-            }
-        });
-
-// Function to find and log the closest value
-function logClosestValue(sliderValue) {
-    // Convert sliderValue to a number with appropriate decimal places
-    const formattedValue = (sliderValue / 100000).toFixed(9); // Adjust divisor based on slider scale
-    
-    // Check if the formattedValue exists in jsonData
-    if (jsonData.hasOwnProperty(formattedValue)) {
-        console.log(`Value for ${formattedValue}: ${jsonData[formattedValue]}`);
-    } else {
-        // If not found, you can implement a way to find the closest value
-        let closestKey = null;
-        let closestDiff = Infinity;
-
-        // Find the closest key in jsonData
-        for (const key in jsonData) {
-            const diff = Math.abs(parseFloat(key) - parseFloat(formattedValue));
-            if (diff < closestDiff) {
-                closestDiff = diff;
-                closestKey = key;
-            }
-        }
-
-        if (closestKey) {
-            console.log(`Closest value for ${formattedValue} is ${closestKey}: ${jsonData[closestKey]}`);
-        }
+    // High DPI Canvas Adjustment
+    function adjustCanvasForHighDPI(canvas, context) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      context.scale(dpr, dpr);
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
     }
-}
+    adjustCanvasForHighDPI(canvas, ctx);
 
-// Slider event listener
-const slider = document.getElementById('dataPointSlider');
-slider.addEventListener('input', (e) => {
-    const value = parseInt(e.target.value);
-    logClosestValue(value);
-});
+    // D3 Line Chart setup
+    const svg = d3.select("#d3Chart")
+      .append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%");
+
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const width = svg.node().getBoundingClientRect().width - margin.left - margin.right;
+    const height = svg.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+    const xValues = Object.keys(jsonData).map(key => key);
+    const yValues = Object.values(jsonData);
+
+    const xMin = d3.min(xValues); // Minimum x value
+    const xMax = d3.max(xValues); // Maximum x value
+    const yMin = d3.min(yValues);  // Minimum y value
+    const yMax = d3.max(yValues);  // Maximum y value
+
+    // Update scales with dynamic min/max values
+    const x = d3.scaleLinear().domain([xMin, xMax]).range([0, width]);
+    const y = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
+
+    // Append the x-axis
+    svg.append("g")
+      .attr("transform", `translate(${margin.left}, ${height + margin.top})`)
+      .call(d3.axisBottom(x));
+
+    // Append the y-axis
+    svg.append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`)
+      .call(d3.axisLeft(y));
+
+    // Optionally, add axis labels
+    svg.append("text")
+      .attr("class", "x axis-label")
+      .attr("transform", `translate(${width / 2 + margin.left}, ${height + margin.bottom + 20})`)
+      .style("text-anchor", "middle")
+      .text("B");
+
+    svg.append("text")
+      .attr("class", "y axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left / 2 - 10)
+      .attr("x", -height / 2 - margin.top)
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("Triplet Yield");
+
+    // Optionally, you can also plot the data points using the scales
+    const dataPoints = xValues.map((xValue, i) => ({
+      x: parseFloat(xValue),
+      y: jsonData[String(xValue)]
+    }));
+
+    console.log("Data Points: ", dataPoints);
+
+
+    // Create the line generator
+    const lineGenerator = d3.line()
+      .x(d => x(d.x) + margin.left)  // x position
+      .y(d => y(d.y) + margin.top)    // y position
+
+    // Draw the line
+    svg.append("path")
+      .datum(dataPoints)  // Bind the data
+      .attr("class", "line")   // Add a class for styling (if needed)
+      .attr("d", lineGenerator) // Set the path data
+      .style("fill", "none")   // No fill for the line
+      .style("stroke", "black")  // Line color
+      .style("stroke-width", 2); // Line thickness
 
 
 
-    </script>
-    
+
+
+
+    // Global array to store circles
+    let circles = [];
+
+    drawCircles();
+
+
+    function circlesOverlap(x1, y1, r1, x2, y2, r2) {
+      const dist = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+      return dist < (r1 + r2);
+    }
+
+    function drawCircles() {
+      const radius = 20;
+      circles = []; // Reset the circles array for a new set
+      let attempts = 0;
+
+      for (let i = 0; i < 100; i++) {
+        let x, y;
+        let safe = false;
+
+        // Try to find a valid position for the circle
+        while (!safe && attempts < 1000) {
+          x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
+          y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
+
+          // Check if the new circle overlaps any existing circles
+          safe = true;
+          for (let circle of circles) {
+            if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
+              safe = false;
+              break;
+            }
+          }
+
+          attempts++;
+        }
+
+        // If too many attempts fail, exit
+        if (!safe) {
+          console.error("Couldn't place all circles without overlap");
+          break;
+        }
+
+        // Random color for each circle
+        const color = Math.random() > 0.5 ? SPACE : PINK; // Use SPACE or PINK
+        const text = color === SPACE ? 'H₂O₂' : 'O₂'; // Set text to H2O2 if SPACE, else O2
+
+        // Store the circle data (x, y, radius, color, and text)
+        circles.push({ x, y, radius, color, text });
+      }
+
+      // Draw the circles
+      circles.forEach(circle => {
+        drawCircle(circle.x, circle.y, circle.radius, circle.color, circle.text);
+      });
+    }
+
+
+    function drawCircle(x, y, radius, color, text) {
+      // Draw the circle
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+
+
+      // Measure the text width to center it
+      const textWidth = ctx.measureText(text).width;
+      const textX = x - textWidth / 2; // Center the text horizontally
+      const textY = y + 5; // Adjust the vertical position slightly below the center
+
+      // Draw the text label
+      ctx.fillStyle = 'black';
+      ctx.font = '16px Arial'; // Set the font size
+      // Draw the text at the calculated position
+      ctx.fillText(text, textX, textY);
+    }
+
+
+    // Function to update colors and text for the circles without changing positions
+    function updateCircles(newColors, newTexts) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+      // Loop through the circles array and update each circle
+      circles.forEach((circle, index) => {
+        // Update color and text if new values are provided
+        if (newColors && newColors[index]) circle.color = newColors[index];
+        if (newTexts && newTexts[index]) circle.text = newTexts[index];
+
+        // Re-draw the circle with updated properties
+        drawCircle(circle.x, circle.y, circle.radius, circle.color, circle.text);
+      });
+    }
+
+    // Function to update the point on D3 graph
+    function updateD3Graph(value) {
+      const scaledX = x(value); // Scale the input value to the x-axis
+      const scaledY = y(.5); // Static value for Y-axis for demo (this can be dynamic)
+
+      // Remove any previous point
+      svg.selectAll(".data-point").remove();
+
+      // Append the new point
+      svg.append("circle")
+        .attr("class", "data-point")
+        .attr("cx", scaledX + margin.left)
+        .attr("cy", scaledY + margin.top)
+        .attr("r", 5)
+        .style("fill", "blue");
+    }
+
+    // Event listener for input changes
+    input.addEventListener('input', (e) => {
+      // Only draw circles once at the start
+      // if (circles.length === 0) {
+      //     drawCircles();
+      // }
+      if (!isNaN(e.target.value)) {
+        updateD3Graph(e.target.value);
+      }
+    });
+
+    // Function to find the closest y value based on the slider value
+    function findClosestY(sliderValue) {
+      let closestY = null;
+      let minDiff = Infinity;
+
+      // Iterate over dataPoints to find the closest x value
+      for (const point of dataPoints) {
+        const diff = Math.abs(point.x - sliderValue);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestY = point.y;
+        }
+      }
+
+      // Print the closest Y value to the console
+      if (closestY !== null) {
+        console.log(`Closest Y value: ${closestY}`);
+      } else {
+        console.log('No coordinates available.');
+      }
+    }
+
+    // Example of attaching the function to the slider input event
+    document.getElementById('dataPointSlider').addEventListener('input', function () {
+      const sliderValue = parseFloat(this.value);
+      findClosestY(sliderValue);
+    });
+
+
+
+  </script>
+
 </body>
+
 </html>
