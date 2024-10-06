@@ -17,21 +17,22 @@
 
 <body class="bg-gray-100 flex flex-col lg:flex-row items-start justify-center min-h-screen p-3">
 
-<!-- Left Side: Input and D3 Visualization -->
-<div class="w-full lg:w-1/3 flex flex-col items-start pr-3 space-y-3">
-  <!-- Input Form -->
-  <div class="w-full mb-4">
-    <label class="block text-lg font-semibold">for B: Magnetic Value:</label>
-    <div id="closestXValue" class="input input-bordered rounded-lg w-full mt-2 flex items-center justify-center">
-      <span id="closestX" class="text-center w-full"></span>
+  <!-- Left Side: Input and D3 Visualization -->
+  <div class="w-full lg:w-1/3 flex flex-col items-start pr-3 space-y-3">
+    <!-- Input Form -->
+    <div class="w-full mb-4">
+      <label class="block text-lg font-semibold">for B: Magnetic Value:</label>
+      <div id="closestXValue" class="input input-bordered rounded-lg w-full mt-2 flex items-center justify-center">
+        <span id="closestX" class="text-center w-full"></span>
+      </div>
+      <input type="range" id="dataPointSlider" min="0" max="0.0001" value="0" step="0.000001"
+        class="range range-primary w-full mt-2">
     </div>
-    <input type="range" id="dataPointSlider" min="0" max="0.0001" value="0" step="0.000001" class="range range-primary w-full mt-2">
+
+    <!-- D3 Visualization -->
+    <div id="d3Chart" class="bg-white rounded-md shadow-md w-full" style="height: 300px; padding:10px;"></div>
+    <div id="barChart" class="bg-white rounded-md shadow-md w-full" style="height: 200px; padding:10px;"></div>
   </div>
-  
-  <!-- D3 Visualization -->
-  <div id="d3Chart" class="bg-white rounded-md shadow-md w-full" style="height: 300px; padding:10px;"></div>
-  <div id="barChart" class="bg-white rounded-md shadow-md w-full" style="height: 200px; padding:10px;"></div>
-</div>
 
 
   <!-- Right Side: Drawing Space -->
@@ -146,105 +147,105 @@
     }
 
     function initCircles() {
-    const radius = 20;
-    circles = []; // Reset the circles array for a new set
-    const totalCircles = 100; // Total number of circles
-    const percentageOfBlue = 0.3; // Change this value to set the percentage of blue circles
-    const numberOfBlueCircles = Math.round(totalCircles * percentageOfBlue); // Calculate how many blue circles
+      const radius = 20;
+      circles = []; // Reset the circles array for a new set
+      const totalCircles = 100; // Total number of circles
+      const percentageOfBlue = 0.3; // Change this value to set the percentage of blue circles
+      const numberOfBlueCircles = Math.round(totalCircles * percentageOfBlue); // Calculate how many blue circles
 
-    let attempts = 0;
+      let attempts = 0;
 
-    // Create blue circles first
-    for (let i = 0; i < numberOfBlueCircles; i++) {
+      // Create blue circles first
+      for (let i = 0; i < numberOfBlueCircles; i++) {
         let x, y;
         let safe = false;
 
         // Try to find a valid position for the blue circle
         while (!safe && attempts < 1000) {
-            x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
-            y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
+          x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
+          y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
 
-            // Check if the new circle overlaps any existing circles
-            safe = true;
-            for (let circle of circles) {
-                if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
-                    safe = false;
-                    break;
-                }
+          // Check if the new circle overlaps any existing circles
+          safe = true;
+          for (let circle of circles) {
+            if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
+              safe = false;
+              break;
             }
-            attempts++;
+          }
+          attempts++;
         }
 
         // If too many attempts fail, exit
         if (!safe) {
-            console.error("Couldn't place all blue circles without overlap");
-            break;
+          console.error("Couldn't place all blue circles without overlap");
+          break;
         }
 
         // Store the blue circle data (x, y, radius, color, and text)
         circles.push({ x, y, radius, color: SPACE, text: 'H₂O₂' });
-    }
+      }
 
-    // Reset attempts for pink circles
-    attempts = 0;
+      // Reset attempts for pink circles
+      attempts = 0;
 
-    // Create remaining pink circles
-    const remainingCircles = totalCircles - numberOfBlueCircles;
+      // Create remaining pink circles
+      const remainingCircles = totalCircles - numberOfBlueCircles;
 
-    for (let i = 0; i < remainingCircles; i++) {
+      for (let i = 0; i < remainingCircles; i++) {
         let x, y;
         let safe = false;
 
         // Try to find a valid position for the pink circle
         while (!safe && attempts < 1000) {
-            x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
-            y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
+          x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * radius) + radius;
+          y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * radius) + radius;
 
-            // Check if the new circle overlaps any existing circles
-            safe = true;
-            for (let circle of circles) {
-                if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
-                    safe = false;
-                    break;
-                }
+          // Check if the new circle overlaps any existing circles
+          safe = true;
+          for (let circle of circles) {
+            if (circlesOverlap(x, y, radius, circle.x, circle.y, circle.radius)) {
+              safe = false;
+              break;
             }
-            attempts++;
+          }
+          attempts++;
         }
 
         // If too many attempts fail, exit
         if (!safe) {
-            console.error("Couldn't place all pink circles without overlap");
-            break;
+          console.error("Couldn't place all pink circles without overlap");
+          break;
         }
 
         // Store the pink circle data (x, y, radius, color, and text)
         circles.push({ x, y, radius, color: PINK, text: 'O₂' });
+      }
     }
-}
 
 
 
     function drawCircle(x, y, radius, color, text) {
-  // Draw the circle
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
+      // Draw the circle
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
 
-  // Measure the text width to center it
-  const textWidth = ctx.measureText(text).width;
-  const textX = x - textWidth / 2; // Center the text horizontally
-  const textY = y + 5; // Adjust the vertical position slightly below the center
+      // Measure the text width to center it
+      const textWidth = ctx.measureText(text).width;
+      const textX = x - textWidth / 2; // Center the text horizontally
+      const textY = y + 5; // Adjust the vertical position slightly below the center
 
-  // Set text color based on the text content
-  ctx.fillStyle = (color === SPACE) ? 'white' : 'black'; // Set text color to white for H2O2
+      // Set text color based on the text content
+      ctx.fillStyle = (color === SPACE) ? 'white' : 'black'; // Set text color to white for H2O2
 
-  // Set the font size
-  ctx.font = '16px Arial'; // Set the font size
+      // Set the font size
+      ctx.font = '16px Arial'; // Set the font size
 
-  // Draw the text at the calculated position
-  ctx.fillText(text, textX, textY);
-}
+      // Draw the text at the calculated position
+      ctx.fillText(text, textX, textY);
+    }
 
 
     // Function to update colors and text for the circles without changing positions
@@ -263,9 +264,9 @@
     }
 
     // Function to update the point on D3 graph
-    function updateD3Graph(value) {
-      const scaledX = x(value); // Scale the input value to the x-axis
-      const scaledY = y(.5); // Static value for Y-axis for demo (this can be dynamic)
+    function updateD3Graph(xValue, yValue) {
+      const scaledX = x(xValue); // Scale the input value to the x-axis
+      const scaledY = y(yValue); // Static value for Y-axis for demo (this can be dynamic)
 
       // Remove any previous point
       svg.selectAll(".data-point").remove();
@@ -321,6 +322,7 @@
       } else {
         document.getElementById('closestXValue').innerText = 'No data';
       }
+      return closestX;
     }
 
 // Function to update circle colors based on closestY value
@@ -332,9 +334,13 @@ function updateCircleColorsBasedOnY(closestY) {
     const maxY = d3.max(yValues); // Maximum Y value
 
     // Normalize closestY to a percentage of SPACE circles
-    let percentage = closestY;
-    console.log(percentage); // always undefined
-    console.log(closestY);
+    // Ensure closestY is within the range of minY to maxY
+    const percentage = closestY;
+    console.log(`Percentage: ${percentage}`);
+    console.log(`Closest Y: ${closestY}`);
+
+    // Safeguard against percentage being out of bounds
+    //const clampedPercentage = Math.min(Math.max(percentage, 0), 1);
 
     const spaceCirclesCount = Math.round(percentage * totalCircles);
     const pinkCirclesCount = totalCircles - spaceCirclesCount;
@@ -352,18 +358,21 @@ function updateCircleColorsBasedOnY(closestY) {
     }
 
     // Update the circles' colors
-    updateCircles(newColors);
+    updateCircles(newColors, newTexts); // Make sure to pass newTexts to updateCircles
     console.log(circles);
 }
 
 
-    
+
+
     // Example of attaching the function to the slider input event
     document.getElementById('dataPointSlider').addEventListener('input', function () {
       const sliderValue = parseFloat(this.value);
       findClosestX(sliderValue);
+      console.log(findClosestX);
       closestY = findClosestY(sliderValue);
       updateCircleColorsBasedOnY(closestY);
+      updateD3Graph(findClosestX(sliderValue), findClosestY(sliderValue));
     });
 
   </script>
