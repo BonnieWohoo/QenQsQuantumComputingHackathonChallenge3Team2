@@ -30,8 +30,7 @@
     </div>
 
     <!-- D3 Visualization -->
-    <div id="d3Chart" class="bg-white rounded-md shadow-md w-full" style="height: 300px; padding:10px;"></div>
-    <div id="barChart" class="bg-white rounded-md shadow-md w-full" style="height: 200px; padding:10px;"></div>
+    <div id="d3Chart" class="bg-white rounded-md shadow-md w-full" style="height: 500px; padding:10px;"></div>
   </div>
 
 
@@ -111,7 +110,7 @@
       .attr("x", -height / 2 - margin.top)
       .style("text-anchor", "middle")
       .style("font-size", "12px")
-      .text("Singlet Yield");
+      .text("Singlet Yield (Amount of H₂O₂)");
 
     // Optionally, you can also plot the data points using the scales
     const dataPoints = xValues.map((xValue, i) => ({
